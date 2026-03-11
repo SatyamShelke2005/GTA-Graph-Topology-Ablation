@@ -1,6 +1,6 @@
 name: Process Secure Submission
 
-# CHANGE 1: Trigger on PUSH to main (instead of PR closed)
+# Trigger on PUSH to main (instead of PR closed)
 on:
   push:
     branches:
@@ -11,7 +11,6 @@ permissions:
 
 jobs:
   process-merged-file:
-    # CHANGE 2: Remove the "if merged" check (Push implies merge)
     runs-on: ubuntu-latest
     
     steps:
@@ -36,7 +35,6 @@ jobs:
           TEST_LABELS_CSV: ${{ secrets.TEST_LABELS_CSV }}
         run: |
           python .github/scripts/process_submission.py
-          
 
       - name: Commit and Push Changes
         run: |
@@ -48,4 +46,3 @@ jobs:
             git push
           else
             echo "No changes to commit."
-          fi
