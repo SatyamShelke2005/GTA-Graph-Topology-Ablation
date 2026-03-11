@@ -6,7 +6,8 @@ import sys
 
 # Add parent directory to sys.path to allow importing leaderboard.calculate_scores
 sys.path.append(str(Path(__file__).parent.resolve()))
-from leaderboard.calculate_scores import calculate_scores  # absolute import
+from .calculate_scores import calculate_scores
+
 
 
 def validate_metadata(submission_path: Path) -> None:
