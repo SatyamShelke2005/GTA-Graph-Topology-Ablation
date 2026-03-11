@@ -50,6 +50,25 @@ def ensure_metadata(team_dir):
     
     return metadata_file
 
+def preview_csv_file(csv_path: Path, label="CSV"):
+    """Preview a CSV file to see its columns and first few rows."""
+    try:
+        if csv_path.exists():
+            print(f"\nDEBUG: Preview of {label} file: {csv_path}")
+            df = pd.read_csv(csv_path)
+            print(f"DEBUG: Columns: {list(df.columns)}")
+            print(f"DEBUG: Shape: {df.shape}")
+            print(f"DEBUG: First 3 rows:")
+            print(df.head(3).to_string())
+            print(f"DEBUG: Data types:\n{df.dtypes}")
+            return df
+        else:
+            print(f"DEBUG: {label} file does not exist: {csv_path}")
+            return None
+    except Exception as e:
+        print(f"DEBUG: Could not read {label} CSV: {e}")
+        return None
+
 def get_leaderboard_data():
     leaderboard = []
 
@@ -95,6 +114,14 @@ def get_leaderboard_data():
         print("DEBUG: After decryption - Files in team folder:")
         for f in team_dir.iterdir():
             print(f"  {f.name} (size: {f.stat().st_size if f.exists() else 'N/A'})")
+
+        # PREVIEW THE DECRYPTED CSV FILES
+        ideal_df = preview_csv_file(ideal_csv, "Ideal Submission")
+        pert_df = preview_csv_file(pert_csv, "Perturbed Submission")
+
+        # Also preview the ground truth file if available
+        truth_path = repo_root / "data" / "train.csv"
+        preview_csv_file(truth_path, "Ground Truth (train.csv)")
 
         # Small delay to ensure file system is synced
         time.sleep(1)
