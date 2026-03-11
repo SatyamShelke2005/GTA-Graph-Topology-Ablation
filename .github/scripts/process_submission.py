@@ -1,17 +1,29 @@
+# scripts/process_submission.py
 import subprocess
+import sys
+import os
+from pathlib import Path
 
+# Add repo root to PYTHONPATH so imports work
+repo_root = Path(__file__).parent.parent.resolve()
+sys.path.insert(0, str(repo_root))
+
+def run_script(script_path: str):
+    """Run a Python script and raise error if it fails"""
+    result = subprocess.run([sys.executable, script_path], check=False)
+    if result.returncode != 0:
+        print(f"ERROR: Script {script_path} failed with exit code {result.returncode}")
+        sys.exit(result.returncode)
 
 def main():
-
     print("Decrypting submission...")
-    subprocess.run(["python", "encryption/decrypt.py"])
+    run_script(str(repo_root / "encryption/decrypt.py"))
 
     print("Scoring submission...")
-    subprocess.run(["python", "leaderboard/score_submission.py"])
+    run_script(str(repo_root / "scripts/score_submission.py"))
 
     print("Updating leaderboard...")
-    subprocess.run(["python", "leaderboard/update_leaderboard.py"])
-
+    run_script(str(repo_root / "scripts/leaderboard/update_leaderboard.py"))
 
 if __name__ == "__main__":
     main()
