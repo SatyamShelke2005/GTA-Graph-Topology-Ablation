@@ -41,12 +41,23 @@ test_df = pd.read_csv(os.path.join(DATA_DIR, "test.csv"))
 # ----------------------------
 
 def perturb_graph(data, feature_shift=0.3, noise_std=0.05):
+    """
+    Apply distribution shift and Gaussian noise to node features.
+
+    Args:
+        data (torch_geometric.data.Data): Original graph data.
+        feature_shift (float): Constant offset added to each feature (default 0.3).
+        noise_std (float): Standard deviation of Gaussian noise (default 0.05).
+
+    Returns:
+        torch_geometric.data.Data: Perturbed graph data.
+    """
     data = data.clone()
     if data.x is not None:
-        # Distribution shift
+        # 1️⃣ Distribution shift
         shift = torch.full_like(data.x, feature_shift)
         data.x = data.x + shift
-        # Gaussian noise
+        # 2️⃣ Gaussian noise
         noise = torch.randn_like(data.x) * noise_std
         data.x = data.x + noise
     return data
@@ -60,18 +71,14 @@ ideal_test_graphs = []
 perturbed_test_graphs = []
 
 for _, row in train_df.iterrows():
-
     g = dataset[int(row.graph_index)]
-    g.y = torch.tensor([int(row.label)])
-
+    # FIX: Set label as a scalar tensor (required by nll_loss)
+    g.y = torch.tensor(int(row.label), dtype=torch.long)
     train_graphs.append(g)
 
 for _, row in test_df.iterrows():
-
     g = dataset[int(row.graph_index)]
-
     ideal_test_graphs.append(g)
-
     perturbed_test_graphs.append(perturb_graph(g))
 
 # ----------------------------
@@ -79,9 +86,7 @@ for _, row in test_df.iterrows():
 # ----------------------------
 
 train_loader = DataLoader(train_graphs, batch_size=32, shuffle=True)
-
 ideal_test_loader = DataLoader(ideal_test_graphs, batch_size=32)
-
 perturbed_test_loader = DataLoader(perturbed_test_graphs, batch_size=32)
 
 # ----------------------------
@@ -89,30 +94,22 @@ perturbed_test_loader = DataLoader(perturbed_test_graphs, batch_size=32)
 # ----------------------------
 
 class GINModel(torch.nn.Module):
-
     def __init__(self, input_dim, num_classes):
         super().__init__()
-
         nn = Sequential(
             Linear(input_dim, 64),
             ReLU(),
             Linear(64, 64)
         )
-
         self.conv1 = GINConv(nn)
         self.lin = Linear(64, num_classes)
 
     def forward(self, data):
-
         x, edge_index, batch = data.x, data.edge_index, data.batch
-
         x = self.conv1(x, edge_index)
         x = F.relu(x)
-
         x = global_mean_pool(x, batch)
-
         x = self.lin(x)
-
         return F.log_softmax(x, dim=1)
 
 # ----------------------------
@@ -120,7 +117,6 @@ class GINModel(torch.nn.Module):
 # ----------------------------
 
 model = GINModel(dataset.num_features, dataset.num_classes).to(device)
-
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
 # ----------------------------
@@ -130,26 +126,16 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 print("Training on IDEAL graphs...")
 
 for epoch in range(50):
-
     model.train()
     total_loss = 0
-
     for data in train_loader:
-
         data = data.to(device)
-
         optimizer.zero_grad()
-
         out = model(data)
-
         loss = F.nll_loss(out, data.y)
-
         loss.backward()
-
         optimizer.step()
-
         total_loss += loss.item()
-
     if (epoch + 1) % 10 == 0:
         print(f"Epoch {epoch+1} | Loss {total_loss:.4f}")
 
@@ -158,21 +144,13 @@ for epoch in range(50):
 # ----------------------------
 
 def predict(model, loader):
-
     model.eval()
-
     preds = []
-
     with torch.no_grad():
-
         for data in loader:
-
             data = data.to(device)
-
             out = model(data)
-
             preds.extend(out.argmax(dim=1).tolist())
-
     return preds
 
 # ----------------------------
