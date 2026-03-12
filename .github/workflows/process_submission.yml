@@ -180,7 +180,8 @@ jobs:
           git add .
           if ! git diff-index --quiet HEAD; then
             git commit -m "Processed new submission [skip ci]"
-            git pull --no-rebase origin main
+            # Pull with auto-resolution (favor remote changes)
+            git pull --no-rebase -X theirs origin main
             git push
           else
             echo "No changes to commit."
