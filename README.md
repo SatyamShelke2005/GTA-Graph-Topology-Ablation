@@ -192,9 +192,9 @@ project_root/
 ├── submissions/
 │   ├── ideal_submission.csv
 │   ├── perturbed_submission.csv
-│   └── team_name/           # <-- folder created by script
-│       ├── ideal.enc
-│       └── perturbed.enc
+│   └── team_name/           # <-- folder to be created
+│       ├── ideal.enc        # Keep same name
+│       └── perturbed.enc    # Keep same name
 └── encrypt_submissions.py   # script that encrypts files
 ```
 
