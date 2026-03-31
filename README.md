@@ -5,7 +5,7 @@ This repository hosts the official evaluation system for the **Graph Topology Ab
 📊 **Live leaderboard**: [Open leaderboard](https://idrees11.github.io/GTA-Graph-Topology-Ablation/index.html)
 ---
 
-## 🎯 Objective
+## 🎯 Objective ##
 
 Participants must generate predictions for two settings:
 
